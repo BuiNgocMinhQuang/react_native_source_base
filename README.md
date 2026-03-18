@@ -68,6 +68,42 @@ Now that you have successfully run the app, let's make changes!
 
 Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
 
+## Project conventions (base)
+
+### Environments (`react-native-config`)
+
+- Development env file: `.env.dev`
+- Production env file: `.env.production`
+
+Android mapping lives in `android/app/build.gradle` (`project.ext.envConfigFiles`).  
+iOS mapping/build phase is configured in `ios/MyApp.xcodeproj/project.pbxproj`.
+
+### Theme
+
+Theme is provided via `src/theme/ThemeProvider.tsx` and accessed through `src/hooks/useTheme.ts`.
+
+- **System theme**: set `themeMode` to `system` in `src/state/settingsStore.ts`
+- **Explicit theme**: set `themeMode` to `explicit` and choose `explicitColorScheme` (`light` | `dark`)
+
+### i18n
+
+Translations are in:
+
+- `src/i18n/locales/en/common.json`
+- `src/i18n/locales/vi/common.json`
+
+Notes:
+
+- **Fast Refresh**: JS/TS changes hot reload, but adding/updating some native modules still requires reinstalling pods / rebuilding.
+- **iOS rebuild**: after changing iOS native config, run `bundle exec pod install` then rebuild from Xcode / `npm run ios`.
+
+### UI scaling (avoid magic numbers)
+
+Prefer using:
+
+- `src/utils/DeviceUtils.ts` helpers (`font`, `moderateScale`, `verticalScale`, …)
+- Shared UI tokens in `src/constants/ui.ts` for common component sizing
+
 When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
 
 - **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
@@ -85,6 +121,20 @@ You've successfully run and modified your React Native App. :partying_face:
 # Troubleshooting
 
 If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+
+## iOS notes (known issues in this base)
+
+### CocoaPods `[CP] Embed Pods Frameworks` and `realpath -mq`
+
+Some generated CocoaPods scripts can reference `realpath -mq`. macOS `/usr/bin/realpath` doesn't support `-m`, which can cause the script phase to fail.
+
+This base patches generated `*-frameworks.sh` scripts inside the `ios/Podfile` `post_install`.
+
+### `Sandbox: rsync(...) deny(1)` during build phases
+
+Xcode user-script sandboxing can block `rsync` while embedding frameworks.
+
+This base disables it via `ENABLE_USER_SCRIPT_SANDBOXING = NO` in `ios/MyApp.xcodeproj/project.pbxproj`.
 
 # Learn More
 

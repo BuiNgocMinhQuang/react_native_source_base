@@ -14,6 +14,10 @@ export type ApiErrorShape = {
   raw?: unknown;
 };
 
+export type ApiResult<T> =
+  | { ok: true; data: T }
+  | { ok: false; error: ApiErrorShape };
+
 export const toApiError = (error: unknown): ApiErrorShape => {
   if (axios.isAxiosError(error)) {
     return {
@@ -31,4 +35,24 @@ export const toApiError = (error: unknown): ApiErrorShape => {
     raw: error,
   };
 };
+
+/**
+ * Wraps async API calls into a typed result instead of throwing.
+ * Prefer this in screens/features to keep error handling consistent.
+ */
+export async function apiCall<T>(fn: () => Promise<T>): Promise<ApiResult<T>> {
+  try {
+    const data = await fn();
+    return { ok: true, data };
+  } catch (err) {
+    return { ok: false, error: toApiError(err) };
+  }
+}
+
+// Minimal interceptors scaffold.
+// Add auth tokens / request ids here when the app introduces authentication.
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => Promise.reject(error),
+);
 

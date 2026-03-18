@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import {
   createNativeStackNavigator,
+  NativeStackHeaderProps,
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
@@ -23,63 +24,40 @@ export type RootStackScreenProps<T extends keyof RootStackParamList> =
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export const AppNavigator = () => {
+const StackHeader = ({ navigation, route, back }: NativeStackHeaderProps) => {
   const { t } = useTranslation('common');
 
+  const title =
+    route.name === 'Home'
+      ? t('nav.home')
+      : route.name === 'Form'
+      ? t('nav.form')
+      : route.name === 'Details'
+      ? t('nav.details')
+      : t('nav.settings');
+
+  return (
+    <AppHeader
+      title={title}
+      canGoBack={Boolean(back)}
+      onPressBack={navigation.goBack}
+    />
+  );
+};
+
+export const AppNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        screenOptions={({ navigation, route }) => {
-          const title =
-            route.name === 'Home'
-              ? t('nav.home')
-              : route.name === 'Form'
-              ? t('nav.form')
-              : route.name === 'Details'
-              ? t('nav.details')
-              : t('nav.settings');
-
-          return {
-            headerShown: true,
-            header: (headerProps) => (
-              <AppHeader
-                title={title}
-                canGoBack={headerProps.back !== undefined}
-                onPressBack={navigation.goBack}
-              />
-            ),
-          };
+        screenOptions={{
+          headerShown: true,
+          header: StackHeader,
         }}
       >
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          // options={{ title: t('nav.home') }}
-        />
-        <Stack.Screen
-          name="Form"
-          component={FormScreen}
-          options={{
-            title: t('nav.form'),
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="Details"
-          component={DetailsScreen}
-          options={{
-            title: t('nav.details'),
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{
-            title: t('nav.settings'),
-            headerBackTitle: '',
-          }}
-        />
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Form" component={FormScreen} />
+        <Stack.Screen name="Details" component={DetailsScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

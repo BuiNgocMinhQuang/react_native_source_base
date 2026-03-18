@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
+import { UI } from '../constants/ui';
 
 export type AppHeaderProps = {
   title?: string;
@@ -28,7 +29,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           <TouchableOpacity
             onPress={onPressBack}
             style={styles.side}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            hitSlop={UI.header.hitSlop}
           >
             <Text style={[styles.backIcon, { color: theme.colors.text }]}>
               {'‹'}
@@ -38,21 +39,32 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           <View style={styles.side} />
         )}
 
-        <Text
+        <View
+          pointerEvents="none"
           style={[
-            styles.title,
+            styles.titleContainer,
             {
-              color: theme.colors.text,
-              fontSize: theme.typography.heading.h3.fontSize,
-              fontWeight: theme.typography.heading.h3.fontWeight,
+              left: theme.spacing.lg + UI.header.sideWidth,
+              right: theme.spacing.lg + UI.header.sideWidth,
             },
           ]}
-          numberOfLines={1}
         >
-          {title}
-        </Text>
+          <Text
+            style={[
+              styles.title,
+              {
+                color: theme.colors.text,
+                fontSize: theme.typography.heading.h3.fontSize,
+                fontWeight: theme.typography.heading.h3.fontWeight,
+              },
+            ]}
+            numberOfLines={1}
+          >
+            {title}
+          </Text>
+        </View>
 
-        <View style={styles.side}>{right}</View>
+        <View style={[styles.side, styles.rightSide]}>{right}</View>
       </View>
     </SafeAreaView>
   );
@@ -60,20 +72,30 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    height: 48,
+    height: UI.header.height,
     flexDirection: 'row',
     alignItems: 'center',
+    position: 'relative',
   },
   side: {
-    width: 40,
+    width: UI.header.sideWidth,
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
+  rightSide: {
+    alignItems: 'flex-end',
+  },
   backIcon: {
-    fontSize: 18,
+    fontSize: UI.header.backIconSize,
+  },
+  titleContainer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
-    flex: 1,
     textAlign: 'center',
   },
 });

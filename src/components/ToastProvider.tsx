@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
-import { moderateScale, verticalScale } from '../utils/DeviceUtils';
+import { UI } from '../constants/ui';
 
 type ToastVariant = 'info' | 'success' | 'error';
 
@@ -120,11 +120,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: verticalScale(32),
+    bottom: UI.toast.bottomOffset,
     alignItems: 'center',
   },
   toast: {
-    borderRadius: moderateScale(999),
+    borderRadius: UI.toast.radius,
     maxWidth: '90%',
   },
 });

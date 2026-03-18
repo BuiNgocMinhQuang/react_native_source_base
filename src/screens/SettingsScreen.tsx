@@ -38,7 +38,15 @@ export const SettingsScreen = () => {
         </Text>
 
         <View style={{ marginTop: theme.spacing.lg }}>
-          <Text style={{ color: theme.colors.textSecondary, marginBottom: 8 }}>
+          <Text
+            style={[
+              styles.sectionLabel,
+              {
+                color: theme.colors.textSecondary,
+                marginBottom: theme.spacing.sm,
+              },
+            ]}
+          >
             {t('settings.themeModeLabel', {
               mode: themeMode,
               scheme: explicitColorScheme,
@@ -89,7 +97,15 @@ export const SettingsScreen = () => {
         </View>
 
         <View style={{ marginTop: theme.spacing.lg }}>
-          <Text style={{ color: theme.colors.textSecondary, marginBottom: 8 }}>
+          <Text
+            style={[
+              styles.sectionLabel,
+              {
+                color: theme.colors.textSecondary,
+                marginBottom: theme.spacing.sm,
+              },
+            ]}
+          >
             {t('settings.languageLabel', { language })}
           </Text>
           <View style={{ flexDirection: 'row' }}>
@@ -122,6 +138,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
+    textAlign: 'left',
+  },
+  sectionLabel: {
     textAlign: 'left',
   },
 });

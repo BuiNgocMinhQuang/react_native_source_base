@@ -4,11 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Input, Button } from '../components';
+import { Button, FormInput } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { useToast } from '../components/ToastProvider';
 import { submitExampleForm } from '../api/example';
-import { toApiError } from '../api/client';
+import { apiCall } from '../api/client';
 import { useTranslation } from 'react-i18next';
 
 const formSchema = z.object({
@@ -24,10 +24,9 @@ export const FormScreen = () => {
   const { t } = useTranslation('common');
 
   const {
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
-    setValue,
-    watch,
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,18 +35,13 @@ export const FormScreen = () => {
     },
   });
 
-  // React Hook Form + React Native: using register + watch for simplicity here.
-  const name = watch('name');
-  const email = watch('email');
-
   const onSubmit = async (values: FormValues) => {
-    try {
-      await submitExampleForm(values);
+    const result = await apiCall(() => submitExampleForm(values));
+    if (result.ok) {
       showToast({ message: t('form.submitSuccess'), variant: 'success' });
-    } catch (err) {
-      const apiError = toApiError(err);
+    } else {
       showToast({
-        message: apiError.message || t('toast.apiError'),
+        message: result.error.message || t('toast.apiError'),
         variant: 'error',
       });
     }
@@ -66,6 +60,7 @@ export const FormScreen = () => {
               color: theme.colors.text,
               fontSize: theme.typography.heading.h2.fontSize,
               fontWeight: theme.typography.heading.h2.fontWeight,
+              marginBottom: theme.spacing.lg,
             },
           ]}
         >
@@ -73,25 +68,21 @@ export const FormScreen = () => {
         </Text>
 
         <View style={{ marginBottom: theme.spacing.md }}>
-          <Input
+          <FormInput<FormValues>
+            control={control}
+            name="name"
             label={t('form.nameLabel')}
-            value={name}
-            onChangeText={text =>
-              setValue('name', text, { shouldValidate: true })
-            }
             errorText={errors.name?.message}
           />
         </View>
 
         <View style={{ marginBottom: theme.spacing.lg }}>
-          <Input
+          <FormInput<FormValues>
+            control={control}
+            name="email"
             label={t('form.emailLabel')}
             keyboardType="email-address"
             autoCapitalize="none"
-            value={email}
-            onChangeText={text =>
-              setValue('email', text, { shouldValidate: true })
-            }
             errorText={errors.email?.message}
           />
         </View>
@@ -115,7 +106,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    marginBottom: 16,
     textAlign: 'left',
   },
 });

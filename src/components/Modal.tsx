@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
-import { moderateScale } from '../utils/DeviceUtils';
+import { UI } from '../constants/ui';
 import { Button } from './Button';
 
 export type ModalProps = {
@@ -79,8 +79,8 @@ export const Modal: FC<ModalProps> = ({
                   color: theme.colors.textSecondary,
                   fontSize: theme.typography.body.body2.fontSize,
                   lineHeight: theme.typography.body.body2.lineHeight,
-                  marginBottom: children ? theme.spacing.md : 0,
                 },
+                children ? styles.messageWithChildren : styles.messageNoChildren,
               ]}
             >
               {message}
@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   card: {
-    width: '85%',
-    borderRadius: moderateScale(16),
+    width: UI.modal.cardWidthPercent,
+    borderRadius: UI.modal.cardRadius,
   },
   title: {
     textAlign: 'left',
@@ -165,6 +165,12 @@ const styles = StyleSheet.create({
   },
   message: {
     textAlign: 'left',
+  },
+  messageWithChildren: {
+    marginBottom: UI.spacing.md,
+  },
+  messageNoChildren: {
+    marginBottom: 0,
   },
   action: {
     flex: 1,
