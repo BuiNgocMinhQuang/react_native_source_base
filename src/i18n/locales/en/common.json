@@ -1,0 +1,51 @@
+{
+  "home": {
+    "title": "Starter Base",
+    "themeLabel": "Theme: {{scheme}}",
+    "primaryButton": "Primary Button",
+    "secondaryButton": "Secondary Button",
+    "disabledButton": "Disabled Button",
+    "showModal": "Show modal",
+    "showToast": "Show toast",
+    "inputLabel": "Sample input",
+    "inputPlaceholder": "Type something...",
+    "goToForm": "Go to form",
+    "goToDetails": "Go to details",
+    "goToSettings": "Go to settings"
+  },
+  "form": {
+    "title": "Form demo",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "submitSuccess": "Submitted successfully"
+  },
+  "settings": {
+    "title": "Settings",
+    "themeModeLabel": "Theme mode: {{mode}} ({{scheme}})",
+    "languageLabel": "Language: {{language}}",
+    "system": "System",
+    "explicit": "Explicit",
+    "light": "Light",
+    "dark": "Dark",
+    "english": "English",
+    "vietnamese": "Vietnamese"
+  },
+  "modal": {
+    "title": "Confirmation",
+    "message": "Are you sure you want to continue?",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
+  "toast": {
+    "info": "This is a sample toast",
+    "apiError": "Something went wrong"
+  },
+  "nav": {
+    "home": "Home",
+    "form": "Form demo",
+    "details": "Details",
+    "settings": "Settings"
+  }
+}

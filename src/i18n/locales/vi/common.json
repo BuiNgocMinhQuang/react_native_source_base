@@ -1,0 +1,51 @@
+{
+  "home": {
+    "title": "Starter Base",
+    "themeLabel": "Theme: {{scheme}}",
+    "primaryButton": "Nút chính",
+    "secondaryButton": "Nút phụ",
+    "disabledButton": "Nút bị khóa",
+    "showModal": "Hiện modal",
+    "showToast": "Hiện thông báo",
+    "inputLabel": "Ô nhập ví dụ",
+    "inputPlaceholder": "Nhập gì đó...",
+    "goToForm": "Đi tới màn form",
+    "goToDetails": "Đi tới màn chi tiết",
+    "goToSettings": "Đi tới cài đặt"
+  },
+  "form": {
+    "title": "Form demo",
+    "nameLabel": "Tên",
+    "emailLabel": "Email",
+    "submit": "Gửi",
+    "submitting": "Đang gửi...",
+    "submitSuccess": "Gửi form thành công"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "themeModeLabel": "Chế độ theme: {{mode}} ({{scheme}})",
+    "languageLabel": "Ngôn ngữ: {{language}}",
+    "system": "Theo hệ thống",
+    "explicit": "Tự chọn",
+    "light": "Sáng",
+    "dark": "Tối",
+    "english": "Tiếng Anh",
+    "vietnamese": "Tiếng Việt"
+  },
+  "modal": {
+    "title": "Xác nhận",
+    "message": "Bạn có chắc muốn tiếp tục?",
+    "cancel": "Hủy",
+    "confirm": "Đồng ý"
+  },
+  "toast": {
+    "info": "Đây là thông báo ví dụ",
+    "apiError": "Có lỗi xảy ra"
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "form": "Form demo",
+    "details": "Chi tiết",
+    "settings": "Cài đặt"
+  }
+}

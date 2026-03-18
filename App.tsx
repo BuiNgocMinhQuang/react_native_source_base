@@ -1,45 +1,44 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react';
+import { StatusBar } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider } from './src/theme/ThemeProvider';
+import { ToastProvider } from './src/components';
+import { AppNavigator } from './src/navigation';
+import { useSettingsStore } from './src/state/settingsStore';
+import { i18n } from './src/i18n';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  const { themeMode, explicitColorScheme } = useSettingsStore();
+  const isDarkMode =
+    themeMode === 'explicit' ? explicitColorScheme === 'dark' : false;
+
+  const [i18nReady, setI18nReady] = useState(i18n.isInitialized);
+
+  useEffect(() => {
+    if (i18n.isInitialized) {
+      return;
+    }
+    const handleInit = () => setI18nReady(true);
+    i18n.on('initialized', handleInit);
+    return () => {
+      i18n.off('initialized', handleInit);
+    };
+  }, []);
+
+  if (!i18nReady) {
+    return null;
+  }
 
   return (
     <SafeAreaProvider>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <ThemeProvider mode={themeMode} colorScheme={explicitColorScheme}>
+        <ToastProvider>
+          <AppNavigator />
+        </ToastProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;

@@ -5,8 +5,15 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-platform :ios, min_ios_version_supported
+platform :ios, '15.1'
+# use_frameworks! :linkage => :static
+use_modular_headers!
 prepare_react_native_project!
+
+# Đảm bảo có dSYM cho tất cả framework
+ENV['EXPANDED_CODE_SIGN_IDENTITY'] = ""
+ENV['CODE_SIGNING_REQUIRED'] = "NO"
+ENV['CODE_SIGNING_ALLOWED'] = "NO"
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
@@ -14,21 +21,138 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'MyApp' do
+# react-native-config default env files (can be overridden by setting ENVFILE when building)
+ENVFILES_BY_CONFIGURATION = {
+  'Debug' => '$(PODS_ROOT)/../../.env.dev',
+  'Release' => '$(PODS_ROOT)/../../.env.production',
+}
+
+def shared_pods
   config = use_native_modules!
 
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/.."
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    :fabric_enabled => false,
+    :new_arch_enabled => false,
+  )
+end
+
+target 'MyApp' do
+  shared_pods
+  pod 'react-native-config', :path => '../node_modules/react-native-config'
+end
+
+post_install do |installer|
+  react_native_post_install(
+    installer,
+    '../node_modules/react-native',
+    :mac_catalyst_enabled => false,
+    # :cache_enabled => true
   )
 
-  post_install do |installer|
-    react_native_post_install(
-      installer,
-      config[:reactNativePath],
-      :mac_catalyst_enabled => false,
-      # :ccache_enabled => true
-    )
+  configure_react_native_config_environment(installer)
+
+  # Cấu hình build settings chung
+  configure_common_build_settings(installer)
+
+  # Cấu hình cụ thể cho hermes framework
+  # configure_hermes_framework(installer)
+
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+    end
+  end
+end
+
+def configure_react_native_config_environment(installer)
+  installer.pods_project.targets.each do |target|
+    next unless target.name == 'react-native-config'
+
+    target.build_configurations.each do |config|
+      env_file = ENVFILES_BY_CONFIGURATION[config.name]
+      next unless env_file
+
+      # Only set a default if the build didn't explicitly provide ENVFILE.
+      config.build_settings['ENVFILE'] ||= env_file
+    end
+  end
+end
+
+# Helper method để cấu hình build settings chung
+def configure_common_build_settings(installer)
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      # Swift version
+      config.build_settings['SWIFT_VERSION'] = '5.9'
+
+      # Debug information và dSYM
+      config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
+      config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
+      config.build_settings['ENABLE_BITCODE'] = 'NO'
+
+      # Runtime search paths
+      config.build_settings['LD_RUNPATH_SEARCH_PATHS'] = [
+        '$(inherited)',
+        '/usr/lib/swift',
+        '@executable_path/Frameworks'
+      ]
+
+      # Architecture configuration
+      # config.build_settings['ARCHS'] = 'arm64'
+      # config.build_settings['VALID_ARCHS'] = 'arm64'
+
+      # Code signing (tránh conflicts)
+      config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO' if target.name.start_with?('Pods-')
+
+      # iOS deployment target consistency
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+
+      # Đảm bảo Hermes V1 được bật để tránh include các header Hermes cũ
+      gcc_defs = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || ['$(inherited)']
+      unless gcc_defs.include? 'HERMES_V1_ENABLED=1'
+        gcc_defs << 'HERMES_V1_ENABLED=1'
+      end
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = gcc_defs
+
+    #   # Build optimizations - chỉ set cho C/C++ targets, tránh Swift targets
+    #   if target.name.include?('hermes') || target.name.include?('folly') || target.name.include?('glog') || target.name.include?('fmt')
+    #     config.build_settings['GCC_OPTIMIZATION_LEVEL'] = config.name == 'Debug' ? '0' : 's'
+    #   end
+
+    #   # Swift optimization chỉ set cho Swift targets
+    #   if target.name.include?('Swift') || target.name.include?('Firebase') || target.name.include?('Google')
+    #     config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = config.name == 'Debug' ? '-Onone' : '-Os'
+    #   end
+    end
+  end
+end
+
+# Helper method để cấu hình hermes framework
+def configure_hermes_framework(installer)
+  installer.pods_project.targets.each do |target|
+    next unless target.name == 'hermes-engine'
+
+    target.build_configurations.each do |config|
+      # Debug information cho hermes
+      config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
+      config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
+      config.build_settings['ENABLE_BITCODE'] = 'NO'
+      config.build_settings['STRIP_INSTALLED_PRODUCT'] = 'NO'
+      config.build_settings['DEAD_CODE_STRIPPING'] = 'NO'
+
+      # Optimization cho hermes - chỉ set cho C/C++ targets
+      config.build_settings['GCC_OPTIMIZATION_LEVEL'] = 's'
+
+      # Debug symbols configuration
+      config.build_settings['CLANG_DEBUG_INFORMATION_LEVEL'] = 'default'
+      config.build_settings['GCC_GENERATE_DEBUGGING_SYMBOLS'] = 'YES'
+
+      # Hermes specific settings
+      config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+      config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
+    end
   end
 end
